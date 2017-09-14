@@ -1,0 +1,126 @@
+body {
+    background:#263238;
+    color:rgba(0,255,0,.87);
+    font-family:'Roboto Mono', monospace;
+    font-size:12px;
+    margin:0;
+}
+h1 {
+    text-shadow:1px 0 black, -1px 0 black, 0 1px black, 0 -1px black;
+    margin-bottom:8px;
+}
+a {
+    color:rgba(255,255,255,.87);
+    text-decoration:none;
+}
+a:visited, a:hover, a:active, a:focus {
+    color:rgba(255,255,255,.54);
+}
+h1 a:link {
+    color:rgba(0,255,0,.87);
+}
+h1 a:visited, h1 a:hover, h1 a:active, h1 a:focus {
+    color:rgba(0,255,0,.54);
+}
+div#clock {
+    position:absolute;
+    top:0;
+    right:2px;
+}
+main {
+    margin:0 auto;
+    margin-top:50px;
+    max-width:1200px;
+}
+section.input {
+    position:relative;
+    width:600px;
+    margin:0 auto;
+}
+section.input input {
+    width:100%;
+    box-sizing:border-box;
+    outline:none;
+    border:none;
+    border-bottom:1px solid rgba(0,255,0,.87);
+    color:white;
+    padding:8px;
+    font-size:2em;
+    background:none;
+    color:rgba(0,255,0,.87);
+}
+section.input ul {
+    position:absolute;
+    list-style-type:none;
+    width:100%;
+    padding:0;
+    margin:0;
+}
+section.input ul li a {
+    display:block;
+    border:1px solid rgba(0,255,0,.87);
+    border-top:none;
+    padding:8px;
+    background:rgb(59,70,76);
+    color:white;
+    text-decoration:none;
+}
+section.input ul li a:hover, section.input ul li a:focus {
+    background:#465156;
+    text-decoration:underline;
+}
+main > header {
+    text-align:center;
+}
+main > div {
+    display:flex;
+    flex-wrap:wrap;
+}
+main > div section {
+    flex:1;
+    padding:8px;
+    border:1px solid rgba(0,255,0,.87);
+    border-style:solid none none solid
+}
+main > div section:first-of-type {
+    border-style:solid none none none;
+}
+main > div section h1 {
+    margin:8px 0;
+}
+main > div section > ul {
+    padding:0;
+    margin:0;
+    list-style-type:none;
+}
+main > div a {
+    display:block;
+}
+form {
+    text-align:center;
+}
+@media only screen and (max-width: 600px) {
+    main {
+        max-width:auto;
+        margin-top:0;
+    }
+    main > div {
+        flex-direction:column;
+    }
+    main > div section {
+        border-left:none;
+    }
+    main > div section a {
+        padding:8px 0;
+    }
+    section.input {
+        width:100%;
+    }
+    section.input input {
+        width:100%;
+        box-sizing:border-box;
+    }
+    form {
+        text-align:left;
+    }
+}
