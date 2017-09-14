@@ -1,4 +1,70 @@
 "use strict";
+
+class FuzzySearch {
+    constructor(name) {
+        this.name = name;
+        this.results = [];
+    }
+    search(term) {
+        this.results = [];
+
+        let nameIDX = 0;
+        let nameLen = this.name.length;
+
+        let termIDX = 0;
+        let termLen = term.length;
+
+        while (nameIDX < nameLen && termIDX < termLen) {
+            let nameChar = this.name.charAt(nameIDX).toLowerCase();
+            let termChar = term.charAt(termIDX).toLowerCase();
+            if (nameChar == termChar) {
+                this.results.push(nameIDX);
+                ++termIDX;
+            }
+            ++nameIDX;
+        }
+
+        return this.results;
+    }
+}
+
+class LinkItem {
+    constructor(data) {
+        this.name = new FuzzySearch(name);
+        this.url = data.url;
+    }
+    get element() {
+        let link = document.createElement('a');
+        link.appendChild(document.createTextNode(this.name));
+        link.href = this.url;
+        return link;
+    }
+}
+
+class LinkGroup {
+    constructor(group) {
+        this.title = group.title;
+        this.links = group.links.map(item => new LinkItem(item));
+    }
+}
+
+class Results {
+    constructor(items) {
+        this.items = items;
+    }
+}
+
+class LinkDisplay {
+    constructor(links) {
+        this.displayed = links.display.map(group => new LinkGroup(group));
+        this.hidden = links.hidden;
+    }
+}
+
+fetch('links.json').then(data => data.json()).then(data => {
+    console.log(new LinkDisplay(data));
+});
+
 var getURL = function(url) {
     return new Promise(function (resolve, reject) {
         var xhttp = new XMLHttpRequest();
@@ -132,7 +198,7 @@ var render = {
         this.core.inputSearch(combined);
     }
 }
-var j = getURL("links.json").then(function (data) {render.all(data)});
+// var j = getURL("links.json").then(function (data) {render.all(data)});
 function fuzzy_match_simple(pattern, str) {
     var patternIdx = 0;
     var strIdx = 0;
