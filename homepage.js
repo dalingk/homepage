@@ -4,8 +4,31 @@ class FuzzySearch {
     constructor(name) {
         this.name = name;
         this.results = [];
+        this.elm = document.createElement('span');
+        this.inner = document.createElement('span');
+        this.elm.appendChild(this.inner);
+    }
+    collapseResults(results, termLen) {
+        console.log(results);
+        if (results.length == termLen) {
+            let resultIDX = 0;
+            let tempLen = results.length;
+            let start;
+            while (resultIDX < tempLen) {
+                start = resultIDX;
+                while (resultIDX + 1 < tempLen && (results[resultIDX] + 1) == results[resultIDX + 1]) {
+                    resultIDX++;
+                }
+                this.results.push({start: results[start], end: results[resultIDX]});
+                resultIDX++;
+            }
+            return this.results;
+        } else {
+            return false;
+        }
     }
     search(term) {
+        let tempResults = [];
         this.results = [];
 
         let nameIDX = 0;
@@ -14,19 +37,44 @@ class FuzzySearch {
         let termIDX = 0;
         let termLen = term.length;
 
+        let nameChar = '';
+        let termChar = '';
         while (nameIDX < nameLen && termIDX < termLen) {
-            let nameChar = this.name.charAt(nameIDX).toLowerCase();
-            let termChar = term.charAt(termIDX).toLowerCase();
+            nameChar = this.name.charAt(nameIDX).toLowerCase();
+            termChar = term.charAt(termIDX).toLowerCase();
             if (nameChar == termChar) {
-                this.results.push(nameIDX);
+                tempResults.push(nameIDX);
                 ++termIDX;
             }
             ++nameIDX;
         }
+        return this.collapseResults(tempResults, termLen);
+    }
+    textSnip(start, end) {
+        return document.createTextNode(this.name.substring(start, end));
+    }
+    get element() {
+        let outer = document.createElement('span');
+        let nameIDX = 0;
+        for (let i = 0; i < this.results.length; i++) {
+            let { start, end } = this.results[i];
 
-        return this.results;
+            outer.appendChild(this.textSnip(nameIDX, start));
+
+            let strong = document.createElement('strong');
+            strong.appendChild(this.textSnip(start, end + 1));
+            outer.appendChild(strong);
+
+            nameIDX = end + 1;
+        }
+        if (nameIDX < this.name.length)
+            outer.appendChild(this.textSnip(nameIDX, this.name.length));
+        this.elm.replaceChild(outer, this.inner);
+        this.inner = outer;
+        return this.elm;
     }
 }
+let a = new FuzzySearch('this is a test');
 
 class LinkItem {
     constructor(data) {
