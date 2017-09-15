@@ -48,6 +48,7 @@ section.input input {
     font-size:2em;
     background:none;
     color:rgba(0,255,0,.87);
+    margin-bottom: -1px;
 }
 section.input ul {
     position:absolute;
@@ -55,6 +56,8 @@ section.input ul {
     width:100%;
     padding:0;
     margin:0;
+    max-height: 75vh;
+    overflow-y: scroll;
 }
 section.input ul li a {
     display:block;
@@ -65,8 +68,15 @@ section.input ul li a {
     color:white;
     text-decoration:none;
 }
+section.input ul li:first-of-type a {
+    border-top:1px solid rgba(0,255,0,.87);
+}
+
 section.input ul li a:hover, section.input ul li a:focus {
     background:#465156;
+    text-decoration:underline;
+}
+section.input ul li a strong {
     text-decoration:underline;
 }
 main > header {
