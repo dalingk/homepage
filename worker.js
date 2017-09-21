@@ -14,10 +14,14 @@ self.addEventListener('install', function install (e) {
 });
 
 self.addEventListener('fetch', function (e) {
-    e.respondWith(
-        fetch(e.request).catch(err => {
-            return caches.match(e.request);
+    e.respondWith(caches.open(CACHE_NAME).then(cache => {
+        return cache.match(e.request).then(response => {
+            let fetchPromise = fetch(e.request).then(networkResponse => {
+                cache.put(e.request, networkResponse.clone());
+                return networkResponse;
+            });
+            return response || fetchPromise;
         })
-    )
+    }))
 });
 
