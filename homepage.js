@@ -19,6 +19,7 @@ class FuzzySearch {
                 this.results.push({start: results[start], end: results[resultIDX]});
                 resultIDX++;
             }
+            this.linkItem.update(this.results);
             return this.results;
         } else {
             return false;
@@ -48,10 +49,13 @@ class FuzzySearch {
         return this.collapseResults(tempResults, termLen);
     }
     element() {
-        return this.linkItem.element(this.results);
+        return this.linkItem.element();
     }
     get url() {
         return this.linkItem.url;
+    }
+    reset() {
+        this.linkItem.reset();
     }
 }
 
@@ -60,8 +64,19 @@ class LinkItem {
         this.name = data.name;
         this.url = data.url;
         this.search = new FuzzySearch(data.name);
+        this.content = null;
+        this.targets = [];
+        this.update();
     }
-    element(results) {
+    element() {
+        let temp = this.content.cloneNode(true);
+        this.targets.push(temp);
+        return temp;
+    }
+    textSnip(start, end) {
+        return document.createTextNode(this.name.substring(start, end));
+    }
+    update(results) {
         let text = document.createDocumentFragment();
         if (results) {
             let nameIDX = 0;
@@ -81,22 +96,29 @@ class LinkItem {
         } else {
             text.appendChild(document.createTextNode(this.name));
         }
-
-        let elm;
-        if (this.url) {
-            elm = document.createElement('a');
-            elm.href = this.url;
-            elm.appendChild(text);
-        }
-        else {
-            elm = text;
-        }
-        return elm;
+        this.content = this.rootNode();
+        this.content.appendChild(text);
+        this.targets = this.targets.map(target => {
+            let newNode = this.content.cloneNode(true);
+            target.parentNode.replaceChild(newNode, target);
+            return newNode;
+        });
     }
-    textSnip(start, end) {
-        return document.createTextNode(this.name.substring(start, end));
+    rootNode() {
+        let result = null;
+        if (this.url) {
+            result = document.createElement('a');
+            result.href = this.url;
+        } else {
+            result = document.createDocumentFragment();
+        }
+        return result;
+    }
+    reset() {
+        this.update();
     }
 }
+
 class LinkHeader {
     constructor(data) {
         this.content = new LinkItem(data);
@@ -184,29 +206,33 @@ class LinkSearch {
         input.type = 'text';
         input.name = 'q';
         input.autocomplete = 'off';
-        input.addEventListener('focus', e => e.target.select());
+        input.addEventListener('focus', e => {
+            this.suggestions.style.display = 'block';
+            e.target.select();
+        });
         input.addEventListener('input', e => this.search(this.input.value));
-        input.focus();
         return input;
     }
     search(term) {
+        this.results.map(item => item.reset());
         if (this.input.value.length > 0) {
             this.results = this.searchArray.filter(item => item.search(term));
             this.results.push(new LinkItem({name: `Search: ${term}`, url: `https://www.google.com/search?q=${term}`}));
-            let list = document.createElement('ul');
-            this.results.map(item => {
-                let li = document.createElement('li');
-                li.appendChild(item.element());
-                list.appendChild(li);
-            });
-            let fresh_suggestions = document.createElement('div');
-            fresh_suggestions.id = 'suggestions';
-            fresh_suggestions.appendChild(list);
-            this.wrapper.replaceChild(fresh_suggestions, this.suggestions);
-            this.suggestions = fresh_suggestions;
         } else {
+            this.results = [];
             suggestions.style.display = 'none';
         }
+        let list = document.createElement('ul');
+        this.results.map(item => {
+            let li = document.createElement('li');
+            li.appendChild(item.element());
+            list.appendChild(li);
+        });
+        let fresh_suggestions = document.createElement('div');
+        fresh_suggestions.id = 'suggestions';
+        fresh_suggestions.appendChild(list);
+        this.wrapper.replaceChild(fresh_suggestions, this.suggestions);
+        this.suggestions = fresh_suggestions;
     }
 }
 
