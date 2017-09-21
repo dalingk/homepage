@@ -98,6 +98,7 @@ class LinkItem {
         }
         this.content = this.rootNode();
         this.content.appendChild(text);
+        this.targets = this.targets.filter(target => document.body.contains(target));
         this.targets = this.targets.map(target => {
             let newNode = this.content.cloneNode(true);
             target.parentNode.replaceChild(newNode, target);
