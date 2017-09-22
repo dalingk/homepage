@@ -111,7 +111,7 @@ class LinkItem {
             result = document.createElement('a');
             result.href = this.url;
         } else {
-            result = document.createDocumentFragment();
+            result = document.createElement('span');
         }
         return result;
     }
