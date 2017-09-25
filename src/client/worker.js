@@ -10,7 +10,7 @@ self.addEventListener('install', function install (e) {
         function(cache) {
             return cache.addAll(URLS_TO_CACHE);
         })
-    )
+    );
 });
 
 self.addEventListener('fetch', function (e) {
@@ -21,7 +21,7 @@ self.addEventListener('fetch', function (e) {
                 return networkResponse;
             });
             return response || fetchPromise;
-        })
-    }))
+        });
+    }));
 });
 

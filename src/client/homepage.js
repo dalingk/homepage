@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 class FuzzySearch {
     constructor(item) {
@@ -216,7 +216,7 @@ class LinkSearch {
             this.suggestions.style.display = 'block';
             e.target.select();
         });
-        input.addEventListener('input', e => this.search(this.input.value));
+        input.addEventListener('input', () => this.search(this.input.value));
         return input;
     }
     search(term) {
@@ -226,7 +226,7 @@ class LinkSearch {
             this.results.push(new LinkItem({name: `Search: ${term}`, url: `https://www.google.com/search?q=${term}`}));
         } else {
             this.results = [];
-            suggestions.style.display = 'none';
+            this.suggestions.style.display = 'none';
         }
         let list = document.createElement('ul');
         this.results.map(item => {
@@ -274,13 +274,7 @@ fetch('links.json').then(data => data.json()).then(data => {
 
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', function() {
-        navigator.serviceWorker.register('worker.js').then(function(registration) {
-            // Registration was successful
-            console.log('ServiceWorker registration successful with scope: ', registration.scope);
-        }, function(err) {
-            // registration failed :(
-            console.log('ServiceWorker registration failed: ', err);
-        });
+        navigator.serviceWorker.register('worker.js');
     });
 }
 
