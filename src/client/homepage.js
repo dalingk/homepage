@@ -198,6 +198,11 @@ class LinkSearch {
                 this.input.focus();
             }
         });
+        window.addEventListener('click', e => {
+            if (!this.suggestions.contains(e.target) && e.target != this.input) {
+                this.suggestions.style.display = 'none';
+            }
+        });
     }
     element() {
         return this.wrapper;
