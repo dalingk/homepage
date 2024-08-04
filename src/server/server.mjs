@@ -7,7 +7,7 @@ import { env } from "node:process";
 const API_KEY = fs.readFileSync(env.API_KEY_FILE || "aqi_key");
 const SOCKET = env.SOCKET || 3000;
 const DB = env.DB || "aqi.db";
-const app = express();
+const MOUNT_POINT = env.MOUNT_POINT || "/";
 
 function initDB() {
     const db = sqlite3(DB);
@@ -52,7 +52,18 @@ async function getApi(zip) {
     return storeData(zip, response.data);
 }
 
-app.get("/", async (req, res) => {
+(function setupDB() {
+    const db = initDB();
+    db.prepare(
+        "CREATE TABLE IF NOT EXISTS observation (zipcode text, date text, data text);"
+    ).run();
+    db.close();
+})();
+
+const app = express();
+const router = express.Router();
+
+router.get("/", async (req, res) => {
     try {
         const zip = req.query?.zip;
         if (!zip) {
@@ -72,14 +83,8 @@ app.get("/", async (req, res) => {
     }
 });
 
-(function setupDB() {
-    const db = initDB();
-    db.prepare(
-        "CREATE TABLE IF NOT EXISTS observation (zipcode text, date text, data text);"
-    ).run();
-    db.close();
-})();
+app.use(MOUNT_POINT, router);
 
 app.listen(SOCKET, () => {
-    console.log(`Listening on ${SOCKET}`);
+    console.log(`Listening for requests on ${MOUNT_POINT} on ${SOCKET}`);
 });
