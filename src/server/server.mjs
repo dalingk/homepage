@@ -4,11 +4,13 @@ import axios from "axios";
 import fs from "node:fs";
 import { env } from "node:process";
 
-const API_KEY = fs.readFileSync(env.API_KEY_FILE || 'aqi_key');
+const API_KEY = fs.readFileSync(env.API_KEY_FILE || "aqi_key");
+const SOCKET = env.SOCKET || 3000;
+const DB = env.DB || "aqi.db";
 const app = express();
 
 function initDB() {
-    const db = sqlite3(env.DB || "aqi.db");
+    const db = sqlite3(DB);
     db.pragma("journal_mode = WAL");
     return db;
 }
@@ -78,4 +80,6 @@ app.get("/", async (req, res) => {
     db.close();
 })();
 
-app.listen(env.SOCKET || 3000, () => {});
+app.listen(SOCKET, () => {
+    console.log(`Listening on ${SOCKET}`);
+});
