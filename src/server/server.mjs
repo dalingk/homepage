@@ -64,6 +64,7 @@ const app = express();
 const router = express.Router();
 
 router.get("/", async (req, res) => {
+    res.set({ "Access-Control-Allow-Origin": "*" });
     try {
         const zip = req.query?.zip;
         if (!zip) {
