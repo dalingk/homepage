@@ -30,7 +30,7 @@ div#clock {
     top:0;
     right:2px;
 }
-div#displayAqi {
+#displayAqi {
     position: absolute;
     top: 0;
     left: 0;
@@ -172,5 +172,10 @@ form {
     }
     form {
         text-align:left;
+    }
+    #displayAqi {
+        top: auto;
+        bottom: 0;
+        border-radius: 0 .5rem 0 0;
     }
 }
