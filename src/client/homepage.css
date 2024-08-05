@@ -30,6 +30,46 @@ div#clock {
     top:0;
     right:2px;
 }
+div#displayAqi {
+    position: absolute;
+    top: 0;
+    left: 0;
+    color: white;
+    padding: .25rem;
+    border: 1px black;
+    font-weight: bold;
+    border-radius: 0 0 .5rem 0;
+    cursor: pointer;
+}
+#displayAqi.no-zip {
+    background: black;
+}
+
+#displayAqi.aqi-1 {
+    background: #00e400;
+    color: black;
+}
+
+#displayAqi.aqi-2 {
+    background: #ffff00;
+    color: black;
+}
+
+#displayAqi.aqi-3 {
+    background: #ff7300;
+}
+
+#displayAqi.aqi-4 {
+    background: #ff0000;
+}
+
+#displayAqi.aqi-5 {
+    background: #8f3f97;
+}
+
+#displayAqi.aqi-6 {
+    background: #7e0023;
+}
 main {
     margin:0 auto;
     margin-top:50px;

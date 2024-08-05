@@ -315,6 +315,83 @@ class WeatherApi {
     }
 }
 
+class AqiWidget {
+    constructor() {
+        this.zip = window.localStorage.getItem("zip");
+        this.div = null;
+    }
+    createDiv() {
+        const div = document.createElement("div");
+        div.id = "displayAqi";
+        div.addEventListener("click", this.registerZip.bind(this));
+        return div;
+    }
+    registerZip() {
+        const newZip = prompt("Zip code?");
+        if (newZip === null) {
+            return;
+        } else if (newZip.match(/\d{5}/)) {
+            this.zip = newZip;
+            window.localStorage.setItem("zip", newZip);
+        } else {
+            window.localStorage.removeItem("zip");
+            this.zip = "";
+        }
+        this.display();
+    }
+    async display() {
+        const newDiv = this.createDiv();
+        if (!this.zip) {
+            newDiv.appendChild(new Text("AQI?"));
+            newDiv.classList.add("no-zip");
+        } else {
+            const aqiData = await this.getAqi();
+            const {
+                AQI: aqi,
+                ParameterName: parameter,
+                Category: { Number: number, Name: name },
+            } = aqiData[0];
+            newDiv.appendChild(new Text(`${parameter}: ${aqi}`));
+            newDiv.classList.add(`aqi-${number}`);
+            newDiv.title = name;
+        }
+        if (this.div) {
+            document.body.replaceChild(newDiv, this.div);
+            this.div = newDiv;
+        } else {
+            document.body.appendChild(newDiv);
+            this.div = newDiv;
+        }
+    }
+    async getAqi() {
+        const { data } = await this.fetchData();
+        data.sort((a, b) => b.AQI - a.AQI);
+        return data;
+    }
+    async fetchData() {
+        const cache = window.localStorage.getItem("aqi");
+        if (cache) {
+            const cacheData = JSON.parse(cache);
+            if (
+                new Date() < new Date(cacheData.date) &&
+                this.zip == cacheData.zip
+            ) {
+                return cacheData;
+            }
+        }
+
+        const url = new URL("https://wireguard.dalingk.com/weather/aqi/");
+        url.searchParams.set("zip", this.zip);
+        const response = await fetch(url);
+        if (!response.ok) {
+            throw "Failed to reach AQI API";
+        }
+        const data = await response.json();
+        window.localStorage.setItem("aqi", JSON.stringify(data));
+        return data;
+    }
+}
+
 fetch("links.json")
     .then((data) => data.json())
     .then((data) => {
@@ -327,4 +404,5 @@ if ("serviceWorker" in navigator) {
     });
 }
 
-new WeatherApi().forecast().then((e) => console.log(e));
+new AqiWidget().display();
+// new WeatherApi().forecast().then((e) => console.log(e));
