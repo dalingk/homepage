@@ -8,6 +8,7 @@ const URLS_TO_CACHE = [
     "homepage.js",
     "homepage.css",
     "links.json",
+    "FiraCode-Regular.woff2",
 ];
 
 self.addEventListener("install", function install(e) {

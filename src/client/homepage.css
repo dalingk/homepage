@@ -1,7 +1,12 @@
+@font-face {
+    font-family: 'Fira Code';
+    src: url("FiraCode-Regular.woff2") format('woff2');
+    /* Fira Code available from https://github.com/tonsky/FiraCode */
+}
 body {
     background:#263238;
     color:rgba(0,255,0,.87);
-    font-family:'Roboto Mono', monospace;
+    font-family:'Fira Code', monospace;
     font-size:12px;
     margin:0;
 }
