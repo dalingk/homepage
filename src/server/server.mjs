@@ -44,7 +44,14 @@ function storeData(zip, data) {
 
 async function getApi(zip) {
     const response = await axios.get(
-        `https://www.airnowapi.org/aq/observation/zipCode/current/?format=application/json&zipCode=${zip}&distance=25&API_KEY=${API_KEY}`
+        `https://www.airnowapi.org/aq/observation/current/ziplatLong/`,
+        {
+            params: {
+                format: "application/json",
+                zipCode: zip,
+                api_key: API_KEY,
+            },
+        }
     );
     if (response.status != 200) {
         throw { error: "Failed to communicate with API", status: 502 };
@@ -80,7 +87,12 @@ router.get("/", async (req, res) => {
         }
         res.json(data);
     } catch (e) {
-        res.status(e.status).json(e);
+        console.error(e);
+        const statusCode = e.status || 500;
+        res.status(statusCode).json({
+            error: "A server error occurred",
+            status: statusCode,
+        });
     }
 });
 
