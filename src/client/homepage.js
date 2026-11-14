@@ -316,6 +316,14 @@ class WeatherApi {
 }
 
 class AqiWidget {
+    aqiCategoryMap = {
+        Good: 1,
+        Moderate: 2,
+        "Unhealthy for Sensitive Groups": 3,
+        Unhealthy: 4,
+        "Very Unhealthy": 5,
+        Hazardous: 6,
+    };
     constructor() {
         this.zip = window.localStorage.getItem("zip");
         this.div = null;
@@ -347,13 +355,17 @@ class AqiWidget {
         } else {
             const aqiData = await this.getAqi();
             const {
-                AQI: aqi,
-                ParameterName: parameter,
-                Category: { Number: number, Name: name },
+                nowcastAQI: aqi,
+                parameterName: parameter,
+                aqiCategoryName: categoryName,
             } = aqiData[0];
             newDiv.appendChild(new Text(`${parameter}: ${aqi}`));
-            newDiv.classList.add(`aqi-${number}`);
-            newDiv.title = name;
+            if (this.aqiCategoryMap.hasOwnProperty(categoryName)) {
+                newDiv.classList.add(
+                    `aqi-${this.aqiCategoryMap[categoryName]}`
+                );
+            }
+            newDiv.title = categoryName;
         }
         if (this.div) {
             document.body.replaceChild(newDiv, this.div);
