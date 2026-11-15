@@ -3,7 +3,7 @@
 const CACHE_NAME = "homepage-cache";
 
 const URLS_TO_CACHE = [
-    "./",
+    "/",
     "index.html",
     "homepage.js",
     "homepage.css",
@@ -20,6 +20,7 @@ self.addEventListener("install", function install(e) {
 });
 
 self.addEventListener("fetch", function (e) {
+    if (new URL(e.request.url).host !== self.location.host) return;
     e.respondWith(
         caches.open(CACHE_NAME).then((cache) => {
             return cache.match(e.request).then((cacheResponse) => {

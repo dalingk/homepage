@@ -288,32 +288,14 @@ class WeatherApi {
         this.longitude = localStorage.getItem("longitude");
         this.divs = { temperature: null, sunrise: null, sunset: null };
     }
-    getCachedData(dataType, durationMS) {
-        let stored = localStorage.getItem(dataType);
-        if (!stored) return null;
-        const data = JSON.parse(stored);
-        if (new Date().getTime() - new Date(data.date) > durationMS)
-            return null;
-        return data.data;
-    }
-    setCachedData(dataType, data) {
-        localStorage.setItem(
-            dataType,
-            JSON.stringify({ date: new Date(), data: data }),
-        );
-    }
     async fetchPoints() {
-        // Cache for an hour (3600000 milliseconds)
-        let cached = this.getCachedData("points", 3600000);
-        if (cached) return cached;
-
+        if (!this.latitude || !this.longitude) return;
         const response = await fetch(
             `https://api.weather.gov/points/${this.latitude},${this.longitude}`,
             { headers: { Accept: "application/geo+json" } },
         );
         if (!response.ok) throw "Failed to fetch weather points";
         const json = await response.json();
-        this.setCachedData("points", json);
         return json;
     }
     async forecastHourly() {
@@ -359,7 +341,6 @@ class WeatherApi {
     createDiv(purpose) {
         const newDiv = document.createElement("div");
         newDiv.id = `display${purpose}`;
-        newDiv.addEventListener("click", this.registerLatLong.bind(this));
         return newDiv;
     }
     async display() {
@@ -372,23 +353,29 @@ class WeatherApi {
             second: "numeric",
         });
         const temperatureDiv = this.createDiv("temperature");
+        temperatureDiv.addEventListener(
+            "click",
+            this.registerLatLong.bind(this),
+        );
         const sunriseDiv = this.createDiv("sunrise");
         const sunsetDiv = this.createDiv("sunset");
 
         const hasCoordinates =
-            this.latitude !== null && this.longitude !== null;
+            this.latitude?.length > 0 && this.longitude?.length > 0;
         if (hasCoordinates) {
             const { sunrise, sunset } = await this.sunriseSunset();
             const observation = await this.observationLatest();
+
+            const { stationId, timestamp } = observation?.properties;
             const temperature = observation?.properties?.temperature?.value;
-            const { stationId } = observation?.properties;
             if (temperature === null || isNaN(temperature)) {
                 temperatureDiv.innerText = "Temperature error";
             } else {
                 const temperatureString = temperatureFormatter.format(
                     temperature * 1.8 + 32,
                 );
-                temperatureDiv.innerText = `${stationId}: ${temperatureString} \u00B0F`;
+                temperatureDiv.innerText = `${temperatureString} \u00B0F`;
+                temperatureDiv.title = `${stationId} at ${dateFormatter.format(new Date(timestamp))}`;
             }
             sunriseDiv.innerText = `${dateFormatter.format(new Date(sunrise))}`;
             sunsetDiv.innerText = `${dateFormatter.format(new Date(sunset))}`;
@@ -403,7 +390,9 @@ class WeatherApi {
         ]) {
             if (!sentinel) continue;
             if (this.divs[oldDiv]) {
-                document.querySelector("#topbar").replaceChild(newDiv, this.divs[oldDiv]);
+                document
+                    .querySelector("#topbar")
+                    .replaceChild(newDiv, this.divs[oldDiv]);
             } else {
                 document.querySelector("#topbar").appendChild(newDiv);
             }
@@ -414,6 +403,9 @@ class WeatherApi {
         const newLat = prompt("Latitude?");
         const newLong = prompt("Longitude?");
         if (newLat === null || newLong === null) return;
+        else if (newLat.length == 0 || newLong.length == 0) return;
+        else if (isNaN(newLat) || isNaN(newLong)) return;
+
         this.latitude = newLat;
         window.localStorage.setItem("latitude", newLat);
         this.longitude = newLong;
