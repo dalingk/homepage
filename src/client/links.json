@@ -1,0 +1,67 @@
+{
+    "title": {
+        "name": "dalingk - Homepage",
+        "url": "https://dalingk.com/~kyle/"
+    },
+    "display": [
+        {
+            "title": {
+                "name": "Work"
+            },
+            "links": [
+                {
+                    "name": "DevDocs",
+                    "url": "https://devdocs.io/"
+                },
+                {
+                    "name": "Mail",
+                    "url": "https://outlook.office365.com"
+                }
+            ]
+        },
+        {
+            "title": {
+                "name": "Entertainment"
+            },
+            "links": [
+                {
+                    "name": "Twitch",
+                    "url": "https://twitch.tv/directory/following"
+                },
+                {
+                    "name": "YouTube",
+                    "url": "https://www.youtube.com/feed/subscriptions"
+                },
+                {
+                    "name": "Advent of Code",
+                    "url": "https://adventofcode.com/"
+                },
+                {
+                    "name": "Liquidpedia - Dota 2",
+                    "url": "https://liquipedia.net/dota2/Tier_1_Tournaments"
+                }
+            ]
+        },
+        {
+            "title": {
+                "name": "Misc"
+            },
+            "links": [
+                {
+                    "name": "Ars Technica",
+                    "url": "https://arstechnica.com/"
+                },
+                {
+                    "name": "Hacker News",
+                    "url": "https://news.ycombinator.com/"
+                },
+                {
+                    "name": "tom's Hardware",
+                    "url": "https://www.tomshardware.com/"
+                }
+            ]
+        }
+    ],
+    "hidden": [
+    ]
+}

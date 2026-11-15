@@ -105,7 +105,7 @@ class LinkItem {
         this.content = this.rootNode();
         this.content.appendChild(text);
         this.targets = this.targets.filter((target) =>
-            document.body.contains(target)
+            document.body.contains(target),
         );
         this.targets = this.targets.map((target) => {
             let newNode = this.content.cloneNode(true);
@@ -234,7 +234,7 @@ class LinkSearch {
                 new LinkItem({
                     name: `Search: ${term}`,
                     url: `https://www.google.com/search?q=${term}`,
-                })
+                }),
             );
         } else {
             this.results = [];
@@ -284,34 +284,141 @@ class LinkDisplay {
 
 class WeatherApi {
     constructor() {
-        this.latitude = "40.6897";
-        this.longitude = "-74.0455";
+        this.latitude = localStorage.getItem("latitude");
+        this.longitude = localStorage.getItem("longitude");
+        this.divs = { temperature: null, sunrise: null, sunset: null };
+    }
+    getCachedData(dataType, durationMS) {
+        let stored = localStorage.getItem(dataType);
+        if (!stored) return null;
+        const data = JSON.parse(stored);
+        if (new Date().getTime() - new Date(data.date) > durationMS)
+            return null;
+        return data.data;
+    }
+    setCachedData(dataType, data) {
+        localStorage.setItem(
+            dataType,
+            JSON.stringify({ date: new Date(), data: data }),
+        );
     }
     async fetchPoints() {
-        let cached = localStorage.getItem("points");
-        if (cached) {
-            return JSON.parse(cached).data;
-        } else {
-            const response = await fetch(
-                `https://api.weather.gov/points/${this.latitude},${this.longitude}`
+        // Cache for an hour (3600000 milliseconds)
+        let cached = this.getCachedData("points", 3600000);
+        if (cached) return cached;
+
+        const response = await fetch(
+            `https://api.weather.gov/points/${this.latitude},${this.longitude}`,
+            { headers: { Accept: "application/geo+json" } },
+        );
+        if (!response.ok) throw "Failed to fetch weather points";
+        const json = await response.json();
+        this.setCachedData("points", json);
+        return json;
+    }
+    async forecastHourly() {
+        const points = await this.fetchPoints();
+        const url = points?.properties?.forecast;
+        if (!url) {
+            throw "Unable to find hourly forecast URL in points response";
+        }
+        const response = await fetch(url);
+        if (!response.ok) throw "Failed to fetch hourly forecast";
+        return await response.json();
+    }
+    async observationLatest() {
+        const points = await this.fetchPoints();
+        const stationsUrl = points?.properties?.observationStations;
+        if (!stationsUrl) {
+            throw "Unable to find hourly forecast URL in points response";
+        }
+        const stationsResponse = await fetch(stationsUrl);
+        if (!stationsResponse.ok) throw "Failed to fetch observation stations";
+        for (const stationUrl of (await stationsResponse.json())
+            ?.observationStations) {
+            const observationResponse = await fetch(
+                `${stationUrl}/observations/latest`,
             );
-            if (!response.ok) throw "Failed to fetch weather points";
-            const json = await response.json();
-            localStorage.setItem(
-                "points",
-                JSON.stringify({ date: "", data: json })
-            );
-            return json;
+            if (!observationResponse.ok) continue;
+            const data = await observationResponse.json();
+            // Check that this station is reporting temperature otherwise use the next one
+            if (data?.properties?.temperature?.value === null) continue;
+            return data;
         }
     }
-    async points() {
-        return (await this.fetchPoints())?.properties?.forecastHourly;
+    async sunriseSunset() {
+        const data = await this.fetchPoints();
+        const { sunrise, sunset } = data?.properties?.astronomicalData;
+        return { sunrise, sunset };
     }
     async forecast() {
-        const forecastUrl = await this.points();
-        const response = await fetch(forecastUrl);
-        if (!response.ok) throw "Failed to fetch weather forecast URL";
-        return await response.json();
+        // const hourlyForecast = await this.forecastHourly();
+        const observation = await this.observationLatest();
+        console.log(observation);
+    }
+    createDiv(purpose) {
+        const newDiv = document.createElement("div");
+        newDiv.id = `display${purpose}`;
+        newDiv.addEventListener("click", this.registerLatLong.bind(this));
+        return newDiv;
+    }
+    async display() {
+        const temperatureFormatter = new Intl.NumberFormat(undefined, {
+            maximumFractionDigits: 0,
+        });
+        const dateFormatter = new Intl.DateTimeFormat(undefined, {
+            hour: "numeric",
+            minute: "numeric",
+            second: "numeric",
+        });
+        const temperatureDiv = this.createDiv("temperature");
+        const sunriseDiv = this.createDiv("sunrise");
+        const sunsetDiv = this.createDiv("sunset");
+
+        const hasCoordinates =
+            this.latitude !== null && this.longitude !== null;
+        if (hasCoordinates) {
+            const { sunrise, sunset } = await this.sunriseSunset();
+            const observation = await this.observationLatest();
+            const temperature = observation?.properties?.temperature?.value;
+            const { stationId } = observation?.properties;
+            if (temperature === null || isNaN(temperature)) {
+                temperatureDiv.innerText = "Temperature error";
+            } else {
+                const temperatureString = temperatureFormatter.format(
+                    temperature * 1.8 + 32,
+                );
+                temperatureDiv.innerText = `${stationId}: ${temperatureString} \u00B0F`;
+            }
+            sunriseDiv.innerText = `${dateFormatter.format(new Date(sunrise))}`;
+            sunsetDiv.innerText = `${dateFormatter.format(new Date(sunset))}`;
+        } else {
+            temperatureDiv.innerText = "No lat,long!";
+        }
+
+        for (let [sentinel, newDiv, oldDiv] of [
+            [true, temperatureDiv, "temperature"],
+            [hasCoordinates, sunriseDiv, "sunrise"],
+            [hasCoordinates, sunsetDiv, "sunset"],
+        ]) {
+            if (!sentinel) continue;
+            if (this.divs[oldDiv]) {
+                document.querySelector("#topbar").replaceChild(newDiv, this.divs[oldDiv]);
+            } else {
+                document.querySelector("#topbar").appendChild(newDiv);
+            }
+            this.divs[oldDiv] = newDiv;
+        }
+    }
+    registerLatLong() {
+        const newLat = prompt("Latitude?");
+        const newLong = prompt("Longitude?");
+        if (newLat === null || newLong === null) return;
+        this.latitude = newLat;
+        window.localStorage.setItem("latitude", newLat);
+        this.longitude = newLong;
+        window.localStorage.setItem("longitude", newLong);
+        this.display();
     }
 }
 
@@ -362,18 +469,17 @@ class AqiWidget {
             newDiv.appendChild(new Text(`${parameter}: ${aqi}`));
             if (this.aqiCategoryMap.hasOwnProperty(categoryName)) {
                 newDiv.classList.add(
-                    `aqi-${this.aqiCategoryMap[categoryName]}`
+                    `aqi-${this.aqiCategoryMap[categoryName]}`,
                 );
             }
             newDiv.title = categoryName;
         }
         if (this.div) {
-            document.body.replaceChild(newDiv, this.div);
-            this.div = newDiv;
+            document.querySelector("#topbar").replaceChild(newDiv, this.div);
         } else {
-            document.body.appendChild(newDiv);
-            this.div = newDiv;
+            document.querySelector("#topbar").appendChild(newDiv);
         }
+        this.div = newDiv;
     }
     async getAqi() {
         const { data } = await this.fetchData();
@@ -417,4 +523,4 @@ if ("serviceWorker" in navigator) {
 }
 
 new AqiWidget().display();
-// new WeatherApi().forecast().then((e) => console.log(e));
+new WeatherApi().display();

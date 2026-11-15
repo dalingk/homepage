@@ -11,7 +11,11 @@ body {
     margin: 0;
 }
 h1 {
-    text-shadow: 1px 0 black, -1px 0 black, 0 1px black, 0 -1px black;
+    text-shadow:
+        1px 0 black,
+        -1px 0 black,
+        0 1px black,
+        0 -1px black;
     margin-bottom: 8px;
 }
 a {
@@ -41,17 +45,35 @@ div#clock {
     top: 0;
     right: 2px;
 }
-#displayAqi {
+#topbar {
     position: absolute;
     top: 0;
     left: 0;
     color: white;
-    padding: 0.25rem;
-    border: 1px black;
     font-weight: bold;
-    border-radius: 0 0 0.5rem 0;
-    cursor: pointer;
+    display: flex;
 }
+#topbar div:first-child {
+    border-radius: 0 0 0.5rem 0;
+    margin-left: 0;
+}
+#topbar div {
+    padding: 0.25rem;
+    background: black;
+    border: 1px black;
+    border-radius: 0 0 0.5rem 0.5rem;
+    cursor: pointer;
+    margin-left: 0.25rem;
+}
+#topbar #displaysunrise:before {
+    content: "\01f305 ";
+    padding-right: 0.25rem;
+}
+#topbar #displaysunset:before {
+    content: "\01f307 ";
+    padding-right: 0.25rem;
+}
+
 #displayAqi.no-zip {
     background: black;
 }
@@ -177,6 +199,7 @@ form {
     }
     section.input {
         width: 100%;
+        margin-top: 1.5em;
     }
     section.input input {
         width: 100%;
